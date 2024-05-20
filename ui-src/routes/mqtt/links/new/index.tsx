@@ -1,12 +1,19 @@
 import { useFormContext } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import { z } from "zod";
-import { FIGMA_VARIABLE_TYPE, Link } from "../../../../../common/Link";
-import { CreateLink, MESSAGE_TYPE } from "../../../../../common/Message";
-import { Button, FormInput, FormSelect, Title } from "../../../../components";
+import {
+  FIGMA_VARIABLE_TYPE,
+  Link,
+  figmaVariableTypeToString,
+} from "../../../../../common/Link";
+import {
+  CreateLink,
+  LOCAL_STORAGE_KEYS,
+  MESSAGE_TYPE,
+} from "../../../../../common/Message";
+import { Button, FormInput, FormSelect } from "../../../../components";
 import { Fieldset } from "../../../../components/form/Fieldset";
 import {
-  LOCAL_STORAGE_KEYS,
   useLocalStorage,
   useMessageListener,
   useSetUiOptions,
@@ -14,7 +21,6 @@ import {
 import { ZodFormProvider } from "../../../../providers";
 import { typedPostMessage } from "../../../../utils/window";
 import { Header } from "../../../_components/Header";
-import { IconBackButton } from "../../../_components/IconBackButton";
 
 const schema = z.object({
   topic: z.string().min(1),
@@ -23,7 +29,7 @@ const schema = z.object({
 });
 
 export function NewLink() {
-  useSetUiOptions({ width: 300, height: 400 });
+  useSetUiOptions({ width: 350, height: 400 });
   const [links, setLinks] = useLocalStorage<Link[]>(
     LOCAL_STORAGE_KEYS.MQTT_LINKS,
   );
@@ -55,11 +61,15 @@ export function NewLink() {
           }}
         >
           <Fieldset>
-            <FormInput name="topic" placeholder="/any/mqtt/topic/+" />
-            <FormInput name="name" label="Variable name" />
+            <FormInput name="topic" placeholder="/+/mqtt/topic/#" />
+            <FormInput
+              name="name"
+              label="Variable name"
+              placeholder="my variable"
+            />
             <FormSelect name="type" label="type">
               {Object.values(FIGMA_VARIABLE_TYPE).map((type) => (
-                <option value={type}>{type.toLowerCase()}</option>
+                <option value={type}>{figmaVariableTypeToString(type)}</option>
               ))}
             </FormSelect>
           </Fieldset>

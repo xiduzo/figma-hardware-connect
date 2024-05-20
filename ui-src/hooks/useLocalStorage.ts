@@ -1,20 +1,21 @@
 import { useCallback, useEffect, useState } from "react";
+import { useInterval } from "usehooks-ts";
 import {
   GetLocalStateValue,
+  LOCAL_STORAGE_KEYS,
   MESSAGE_TYPE,
-  PluginMessage,
   SetLocalStateValue,
 } from "../../common/Message";
 import { typedPostMessage } from "../utils/window";
-
-export enum LOCAL_STORAGE_KEYS {
-  MQTT_LINKS = "MQTT_LINKS",
-  MQTT_CONNECTION = "MQTT_CONNECTION",
-}
+import { useMessageListener } from "./useMessageListener";
 
 type Update<T> = T | ((prev?: T) => T | undefined);
 
-export function useLocalStorage<T>(key: LOCAL_STORAGE_KEYS, initialValue?: T) {
+export function useLocalStorage<T>(
+  key: LOCAL_STORAGE_KEYS,
+  initialValue?: T,
+  updateInterval?: number,
+) {
   const [state, setState] = useState(initialValue);
 
   const setLocalState = useCallback(
@@ -33,29 +34,21 @@ export function useLocalStorage<T>(key: LOCAL_STORAGE_KEYS, initialValue?: T) {
     typedPostMessage(GetLocalStateValue(key, initialValue));
   }, [key]);
 
-  useEffect(() => {
-    const handleEvent = ({
-      data: { pluginMessage },
-    }: MessageEvent<PluginMessage<{ key: LOCAL_STORAGE_KEYS; value: T }>>) => {
-      const correctType = [
-        MESSAGE_TYPE.GET_LOCAL_STATE_VALUE,
-        MESSAGE_TYPE.SET_LOCAL_STATE_VALUE,
-      ].includes(pluginMessage.type);
+  useInterval(() => {
+    typedPostMessage(GetLocalStateValue(key, initialValue));
+  }, updateInterval ?? null);
 
-      if (!correctType) return;
+  useMessageListener(MESSAGE_TYPE.GET_LOCAL_STATE_VALUE, (event) => {
+    if (event.data.pluginMessage.payload.key !== key) return;
 
-      if (!pluginMessage.payload) return;
-      if (pluginMessage.payload.key !== key) return;
+    setState(event.data.pluginMessage.payload.value);
+  });
 
-      setState(pluginMessage.payload.value);
-    };
+  useMessageListener(MESSAGE_TYPE.SET_LOCAL_STATE_VALUE, (event) => {
+    if (event.data.pluginMessage.payload.key !== key) return;
 
-    window.addEventListener("message", handleEvent);
-
-    return () => {
-      window.removeEventListener("message", handleEvent);
-    };
-  }, [initialValue, key]);
+    setState(event.data.pluginMessage.payload.value);
+  });
 
   return [state, setLocalState] as const;
 }

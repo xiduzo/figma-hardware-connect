@@ -1,18 +1,12 @@
 import { VariantProps, cva } from "class-variance-authority";
-import { FC } from "react";
 
-export const Button: FC<Props> = ({
-  children,
-  className,
-  intent,
-  ...props
-}) => {
+export function Button({ children, className, intent, ...props }: Props) {
   return (
     <button className={button({ className, intent })} {...props}>
       {children}
     </button>
   );
-};
+}
 
 const button = cva(
   "w-full px-2 py-1 transition-all duration-200 border border-transparent rounded-md disabled:opacity-50",
@@ -23,7 +17,8 @@ const button = cva(
         info: "text-white bg-blue-500",
         warning: "text-white bg-yellow-500",
         danger: "text-white bg-red-500",
-        plain: "text-white border-white active:bg-zinc-50 active:bg-opacity-5",
+        plain:
+          "text-zinc-800 border-zinc-800 dark:text-zinc-100 dark:border-zinc-100 dark:active:bg-zinc-50 active:bg-zinc-600 active:bg-opacity-5",
       },
     },
     defaultVariants: {

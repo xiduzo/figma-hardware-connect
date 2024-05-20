@@ -1,11 +1,8 @@
 import { useFormContext } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
+import { LOCAL_STORAGE_KEYS } from "../../../../common/Message";
 import { Button, Fieldset, FormCheckBox, FormInput } from "../../../components";
-import {
-  LOCAL_STORAGE_KEYS,
-  useLocalStorage,
-  useSetUiOptions,
-} from "../../../hooks";
+import { useLocalStorage, useSetUiOptions } from "../../../hooks";
 import {
   MqttConnection,
   ZodFormProvider,
@@ -15,10 +12,10 @@ import {
 import { Header } from "../../_components/Header";
 
 export function MqttSettings() {
-  const { connect } = useMqtt();
+  const { connect, isConnected } = useMqtt();
   const navigate = useNavigate();
 
-  useSetUiOptions({ width: 300, height: 500 });
+  useSetUiOptions({ width: 275, height: 500 });
 
   const [localState, setLocalState] = useLocalStorage<MqttConnection>(
     LOCAL_STORAGE_KEYS.MQTT_CONNECTION,
@@ -29,7 +26,7 @@ export function MqttSettings() {
       await connect(data);
       navigate(-1);
     } finally {
-      setLocalState(data.saveSettings ? data : undefined);
+      setLocalState(data.autoConnect ? data : undefined);
     }
   };
 
@@ -43,14 +40,35 @@ export function MqttSettings() {
         defaultValues={localState}
       >
         <Fieldset>
-          <FormInput name="host" placeholder="my.mqtt.broker" />
-          <FormInput name="port" type="number" placeholder="1883" />
-          <FormInput name="username" placeholder="username" />
-          <FormInput name="password" type="password" placeholder="password" />
+          <FormInput
+            name="host"
+            disabled={isConnected}
+            placeholder="my.mqtt.broker"
+          />
+          <FormInput
+            name="port"
+            disabled={isConnected}
+            type="number"
+            placeholder="1883"
+          />
+          <FormInput
+            name="username"
+            disabled={isConnected}
+            placeholder="username"
+          />
+          <FormInput
+            name="password"
+            disabled={isConnected}
+            type="password"
+            placeholder="password"
+          />
         </Fieldset>
         <Fieldset>
-          <FormCheckBox name="saveSettings" label="Store settings" />
-          <FormCheckBox name="autoConnect" label="Automatically connect" />
+          <FormCheckBox
+            name="autoConnect"
+            disabled={isConnected}
+            label="Store settings & automatically connect"
+          />
         </Fieldset>
         <FormActions />
       </ZodFormProvider>
@@ -62,12 +80,20 @@ function FormActions() {
   const {
     formState: { isSubmitting },
   } = useFormContext();
+  const { isConnected, disconnect } = useMqtt();
 
   return (
     <Fieldset>
-      <Button className="mx-auto" disabled={isSubmitting}>
-        Connect
-      </Button>
+      {!isConnected && (
+        <Button type="submit" className="mx-auto" disabled={isSubmitting}>
+          Connect
+        </Button>
+      )}
+      {isConnected && (
+        <Button type="button" className="mx-auto" onClick={() => disconnect()}>
+          Disconnect
+        </Button>
+      )}
     </Fieldset>
   );
 }

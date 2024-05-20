@@ -1,9 +1,8 @@
 import { cva } from "class-variance-authority";
-import { FC } from "react";
 
-export const TextArea: FC<Props> = ({ className, ...props }) => {
+export function TextArea({ className, ...props }: Props) {
   return <textarea className={textArea({ className })} {...props} />;
-};
+}
 
 const textArea = cva("");
 

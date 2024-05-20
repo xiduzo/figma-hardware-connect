@@ -7,24 +7,16 @@ import { useMqtt } from "../providers";
 
 export function Home() {
   useSetUiOptions({
-    width: 300,
-    height: 300,
+    width: 275,
+    height: 175,
   });
   return (
     <section className="space-y-5">
       <section className="text-center">
-        <Title>Figma hardware linker</Title>
+        <Title>Mqtt to Figma</Title>
         <Text dimmed>made with ♥️ by xiduzo</Text>
       </section>
       <MqttSection />
-      <section>
-        <Title as="h2">Serial</Title>
-        <Text dimmed>next release</Text>
-      </section>
-      <section>
-        <Title as="h2">Bluetooth</Title>
-        <Text dimmed>who knows...</Text>
-      </section>
     </section>
   );
 }
@@ -34,7 +26,7 @@ function MqttSection() {
   const { isConnected, disconnect } = useMqtt();
 
   return (
-    <section className="space-y-1">
+    <section className="space-y-1.5">
       <section className="flex justify-between items-center">
         <ConnectionIndicator isConnected={isConnected}>
           <Title as="h2">Mqtt</Title>

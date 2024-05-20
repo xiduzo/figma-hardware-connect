@@ -1,9 +1,8 @@
-import { FC } from "react";
 import { Controller, useFormContext } from "react-hook-form";
 import { Input, InputProps, Label, Text } from "../";
 import { useFormFieldError } from "./hooks/useFormFieldError";
 
-export const FormInput: FC<Props> = ({ name, label, ...inputProps }) => {
+export function FormInput({ name, label, ...inputProps }: Props) {
   const { control } = useFormContext();
   const error = useFormFieldError(name);
 
@@ -31,7 +30,7 @@ export const FormInput: FC<Props> = ({ name, label, ...inputProps }) => {
       />
     </Label>
   );
-};
+}
 
 type Props = {
   name: string;

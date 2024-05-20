@@ -1,6 +1,5 @@
 import mqtt from "mqtt";
 import {
-  FC,
   PropsWithChildren,
   createContext,
   useCallback,
@@ -11,8 +10,12 @@ import {
 } from "react";
 import { z } from "zod";
 import { FIGMA_VARIABLE_TYPE, Link } from "../../common/Link";
-import { SetValiable } from "../../common/Message";
-import { LOCAL_STORAGE_KEYS, useLocalStorage } from "../hooks";
+import {
+  LOCAL_STORAGE_KEYS,
+  MESSAGE_TYPE,
+  SetValiable,
+} from "../../common/Message";
+import { useLocalStorage, useMessageListener } from "../hooks";
 import { toBoolean } from "../utils/typeValidators";
 import { typedPostMessage } from "../utils/window";
 
@@ -30,7 +33,6 @@ export const mqttConnection = z.object({
   port: z.number().int().positive(),
   username: z.string().optional(),
   password: z.string().optional(),
-  saveSettings: z.boolean().default(false).optional(),
   autoConnect: z.boolean().default(false).optional(),
 });
 
@@ -49,11 +51,13 @@ const MqttContext = createContext<MqttContext>({
   },
 });
 
-export const MqttProvider: FC<PropsWithChildren> = ({ children }) => {
+export function MqttProvider({ children }: PropsWithChildren) {
   const client = useRef<mqtt.MqttClient>();
   const [isConnected, setIsConnected] = useState(false);
 
-  const [links] = useLocalStorage<Link[]>(LOCAL_STORAGE_KEYS.MQTT_LINKS);
+  const [links, setLinks] = useLocalStorage<Link[]>(
+    LOCAL_STORAGE_KEYS.MQTT_LINKS,
+  );
   const [localState, setLocalState] = useLocalStorage<MqttConnection>(
     LOCAL_STORAGE_KEYS.MQTT_CONNECTION,
   );
@@ -118,7 +122,7 @@ export const MqttProvider: FC<PropsWithChildren> = ({ children }) => {
         if (!id) return;
 
         switch (type) {
-          case FIGMA_VARIABLE_TYPE.NUMBER:
+          case FIGMA_VARIABLE_TYPE.FLOAT:
             typedPostMessage(SetValiable(id, Number(value)));
             break;
           case FIGMA_VARIABLE_TYPE.BOOLEAN:
@@ -143,11 +147,17 @@ export const MqttProvider: FC<PropsWithChildren> = ({ children }) => {
     connect(localState);
   }, [localState]);
 
+  useMessageListener<Link[]>(MESSAGE_TYPE.LINKS_UPDATED, (event) => {
+    setLinks(event.data.pluginMessage.payload);
+  });
+
   return (
     <MqttContext.Provider value={{ publish, connect, disconnect, isConnected }}>
       {children}
     </MqttContext.Provider>
   );
-};
+}
 
-export const useMqtt = () => useContext(MqttContext);
+export function useMqtt() {
+  return useContext(MqttContext);
+}

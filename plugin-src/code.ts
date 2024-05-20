@@ -1,21 +1,31 @@
+import { Link } from "../common/Link";
+import {
+  CreateLink,
+  GetLocalStateValue,
+  LinksUpdated,
+  LOCAL_STORAGE_KEYS,
+  Message,
+  MESSAGE_TYPE,
+  SetLocalStateValue,
+} from "../common/Message";
+
 const defaultUiSize: Pick<ShowUIOptions, "width" | "height"> = {
   height: 300,
   width: 440,
 };
 
-defaultUiSize.height;
+async function linksWhichAreStillInVariables(links: Link[]) {
+  const [collection] = await figma.variables.getLocalVariableCollectionsAsync();
+  return links.filter((link) =>
+    collection.variableIds.find((id) => id === link.id),
+  );
+}
+
 figma.showUI(__html__, {
   width: defaultUiSize.width,
   height: defaultUiSize.height,
   themeColors: true,
 });
-import {
-  CreateLink,
-  GetLocalStateValue,
-  Message,
-  MESSAGE_TYPE,
-  SetLocalStateValue,
-} from "../common/Message";
 
 figma.ui.onmessage = async (message: Message) => {
   const { type, payload } = message;
@@ -30,7 +40,25 @@ figma.ui.onmessage = async (message: Message) => {
 
     case MESSAGE_TYPE.GET_LOCAL_STATE_VALUE: {
       const localState = await figma.clientStorage.getAsync(payload.key);
-      figma.ui.postMessage(GetLocalStateValue(payload.key, localState));
+      if (payload.key !== LOCAL_STORAGE_KEYS.MQTT_LINKS) {
+        figma.ui.postMessage(GetLocalStateValue(payload.key, localState));
+        break;
+      }
+
+      const links = localState as Link[] | undefined;
+      if (!links) {
+        figma.ui.postMessage(GetLocalStateValue(payload.key, localState));
+        break;
+      }
+
+      const filteredLinks = await linksWhichAreStillInVariables(links);
+
+      await figma.clientStorage.setAsync(
+        LOCAL_STORAGE_KEYS.MQTT_LINKS,
+        filteredLinks,
+      );
+
+      figma.ui.postMessage(GetLocalStateValue(payload.key, filteredLinks));
       break;
     }
 
@@ -93,3 +121,17 @@ figma.ui.onmessage = async (message: Message) => {
     }
   }
 };
+
+setInterval(async () => {
+  const localState = (await figma.clientStorage.getAsync(
+    LOCAL_STORAGE_KEYS.MQTT_LINKS,
+  )) as Link[] | undefined;
+
+  if (!localState || !localState.length) return;
+
+  const filteredLinks = await linksWhichAreStillInVariables(localState);
+
+  if (filteredLinks.length === localState.length) return;
+
+  figma.ui.postMessage(LinksUpdated(filteredLinks));
+}, 5000);

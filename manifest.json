@@ -1,5 +1,5 @@
 {
-  "name": "Figma hardware linker",
+  "name": "MQTT to Figma",
   "id": "1373258770799080545",
   "api": "1.0.0",
   "editorType": ["figma", "figjam"],

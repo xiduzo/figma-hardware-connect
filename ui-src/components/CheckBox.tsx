@@ -1,11 +1,10 @@
 import { cva } from "class-variance-authority";
-import { FC } from "react";
 
-export const CheckBox: FC<Props> = ({ className, ...props }) => {
+export function CheckBox({ className, ...props }: Props) {
   return (
     <input className={checkbox({ className })} {...props} type="checkbox" />
   );
-};
+}
 
 const checkbox = cva("p-2 rounded-sm");
 

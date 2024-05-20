@@ -1,13 +1,12 @@
 import { cva } from "class-variance-authority";
-import { FC } from "react";
 
-export const Label: FC<Props> = ({ children, className, ...props }) => {
+export function Label({ children, className, ...props }: Props) {
   return (
     <label className={label({ className })} {...props}>
       {children}
     </label>
   );
-};
+}
 
 const label = cva("");
 

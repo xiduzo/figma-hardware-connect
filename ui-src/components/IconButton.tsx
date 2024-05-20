@@ -1,24 +1,16 @@
-import * as Icons from "@heroicons/react/24/outline";
-import { cva } from "class-variance-authority";
-import { FC } from "react";
+import { Icon, IconProps } from "./Icon";
 
-export const IconButton: FC<Props> = ({ icon, className, ...buttonProps }) => {
-  const Component = Icons[icon];
-
+export function IconButton({ icon, className, ...buttonProps }: Props) {
   return (
     <button
       {...buttonProps}
       className="flex items-center justify-center p-1.5 hover:bg-zinc-200 dark:hover:bg-zinc-700"
     >
-      <Component className={iconButton({ className })} />
+      <Icon icon={icon} />
     </button>
   );
-};
+}
 
-const iconButton = cva("w-5 h-5 text-zinc-800 dark:text-zinc-100");
-
-type Props = React.ButtonHTMLAttributes<HTMLButtonElement> & {
-  icon: keyof typeof Icons;
-};
+type Props = React.ButtonHTMLAttributes<HTMLButtonElement> & IconProps & {};
 
 export type { Props as IconButtonProps };

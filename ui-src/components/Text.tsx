@@ -1,19 +1,18 @@
 import { VariantProps, cva } from "class-variance-authority";
-import { FC } from "react";
 
-export const Text: FC<Props> = ({
+export function Text({
   children,
   className,
   dimmed,
   isError,
   ...props
-}) => {
+}: Props) {
   return (
     <p className={text({ className, dimmed, isError })} {...props}>
       {children}
     </p>
   );
-};
+}
 
 const text = cva("", {
   variants: {
