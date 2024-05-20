@@ -47,7 +47,7 @@ export function MqttLinks() {
         </section>
       )}
       <section
-        className={`divide-y divide-zinc-700 max-h-80 -mx-2.5 px-2.5 ${
+        className={`divide-y divide-zinc-300 dark:divide-zinc-700 max-h-80 -mx-2.5 px-2.5 ${
           links && links.length > 5 ? "overflow-y-scroll" : ""
         }`}
       >
@@ -65,7 +65,10 @@ export function MqttLinks() {
               </Text>
             </section>
             <ButtonGroup>
-              <IconButton icon="PencilIcon" />
+              <IconButton
+                icon="PencilIcon"
+                onClick={() => navigate(`/mqtt/links/edit/${link.id}`)}
+              />
               <IconButton
                 icon="TrashIcon"
                 onClick={() => deleteLink(link.id)}

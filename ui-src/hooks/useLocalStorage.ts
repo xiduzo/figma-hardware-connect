@@ -38,17 +38,23 @@ export function useLocalStorage<T>(
     typedPostMessage(GetLocalStateValue(key, initialValue));
   }, updateInterval ?? null);
 
-  useMessageListener(MESSAGE_TYPE.GET_LOCAL_STATE_VALUE, (event) => {
-    if (event.data.pluginMessage.payload.key !== key) return;
+  useMessageListener<{ key: LOCAL_STORAGE_KEYS; value: T | undefined }>(
+    MESSAGE_TYPE.GET_LOCAL_STATE_VALUE,
+    (payload) => {
+      if (payload?.key !== key) return;
 
-    setState(event.data.pluginMessage.payload.value);
-  });
+      setState(payload.value);
+    },
+  );
 
-  useMessageListener(MESSAGE_TYPE.SET_LOCAL_STATE_VALUE, (event) => {
-    if (event.data.pluginMessage.payload.key !== key) return;
+  useMessageListener<{ key: LOCAL_STORAGE_KEYS; value: T | undefined }>(
+    MESSAGE_TYPE.SET_LOCAL_STATE_VALUE,
+    (payload) => {
+      if (payload?.key !== key) return;
 
-    setState(event.data.pluginMessage.payload.value);
-  });
+      setState(payload?.value);
+    },
+  );
 
   return [state, setLocalState] as const;
 }

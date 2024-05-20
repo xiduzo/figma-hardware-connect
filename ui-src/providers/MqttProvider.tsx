@@ -147,8 +147,8 @@ export function MqttProvider({ children }: PropsWithChildren) {
     connect(localState);
   }, [localState]);
 
-  useMessageListener<Link[]>(MESSAGE_TYPE.LINKS_UPDATED, (event) => {
-    setLinks(event.data.pluginMessage.payload);
+  useMessageListener<Link[]>(MESSAGE_TYPE.LINKS_UPDATED, (links) => {
+    setLinks(links);
   });
 
   return (

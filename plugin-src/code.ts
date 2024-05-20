@@ -7,6 +7,7 @@ import {
   Message,
   MESSAGE_TYPE,
   SetLocalStateValue,
+  UpdateLink,
 } from "../common/Message";
 
 const defaultUiSize: Pick<ShowUIOptions, "width" | "height"> = {
@@ -89,6 +90,37 @@ figma.ui.onmessage = async (message: Message) => {
       break;
     }
 
+    case MESSAGE_TYPE.UPDATE_LINK: {
+      console.log("UPDATE_LINK", payload);
+      if (!payload.id) break;
+
+      const variable = await figma.variables.getVariableByIdAsync(payload.id);
+
+      if (variable) {
+        variable.remove();
+      }
+
+      const [collection] =
+        await figma.variables.getLocalVariableCollectionsAsync();
+
+      const newVariable = figma.variables.createVariable(
+        payload.name,
+        collection,
+        payload.type,
+      );
+
+      figma.ui.postMessage(
+        UpdateLink({
+          id: newVariable.id,
+          name: payload.name,
+          topic: payload.topic,
+          type: payload.type,
+        }),
+      );
+
+      break;
+    }
+
     case MESSAGE_TYPE.SET_VARIABLE: {
       const [collection] =
         await figma.variables.getLocalVariableCollectionsAsync();
@@ -111,7 +143,6 @@ figma.ui.onmessage = async (message: Message) => {
         variable.remove();
       }
 
-      console.log(type, payload);
       break;
     }
 

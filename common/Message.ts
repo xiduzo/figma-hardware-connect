@@ -40,6 +40,17 @@ export function DeleteLink(id: string): DeleteLinkMessage {
   };
 }
 
+type UpdateLinkMessage = {
+  type: MESSAGE_TYPE.UPDATE_LINK;
+  payload: Link;
+};
+export function UpdateLink(payload: Link): UpdateLinkMessage {
+  return {
+    type: MESSAGE_TYPE.UPDATE_LINK,
+    payload: payload,
+  };
+}
+
 type SetUiOptionsMessage = {
   type: MESSAGE_TYPE.SET_UI_OPTIONS;
   payload: {
@@ -119,6 +130,7 @@ export type Message =
   | SetVariableMessage
   | CreateLinkMessage
   | DeleteLinkMessage
+  | UpdateLinkMessage
   | LinksUpdatedMessage
   | GetSetLocalStateValueMessage
   | GetSetLocalStateValueMessage

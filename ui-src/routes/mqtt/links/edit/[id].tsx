@@ -1,5 +1,5 @@
 import { useFormContext } from "react-hook-form";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { z } from "zod";
 import {
   FIGMA_VARIABLE_TYPE,
@@ -7,11 +7,10 @@ import {
   figmaVariableTypeToString,
 } from "../../../../../common/Link";
 import {
-  CreateLink,
   LOCAL_STORAGE_KEYS,
   MESSAGE_TYPE,
 } from "../../../../../common/Message";
-import { Button, FormInput, FormSelect } from "../../../../components";
+import { Button, FormInput, FormSelect, Text } from "../../../../components";
 import { Fieldset } from "../../../../components/form/Fieldset";
 import {
   useLocalStorage,
@@ -22,40 +21,44 @@ import { ZodFormProvider } from "../../../../providers";
 import { Header } from "../../../_components/Header";
 
 const schema = z.object({
+  id: z.string().min(1),
   topic: z.string().min(1),
   name: z.string().min(1),
   type: z.nativeEnum(FIGMA_VARIABLE_TYPE),
 });
 
-export function NewLink() {
+export function EditLink() {
   useSetUiOptions({ width: 350, height: 400 });
   const [links, setLinks] = useLocalStorage<Link[]>(
     LOCAL_STORAGE_KEYS.MQTT_LINKS,
   );
 
   const navigate = useNavigate();
+  const { id } = useParams();
+
+  const link = links?.find((link) => link.id === id);
 
   const sendMessage = useMessageListener<Link>(
-    MESSAGE_TYPE.CREATE_LINK,
+    MESSAGE_TYPE.UPDATE_LINK,
     (link) => {
       if (!link) return;
 
-      setLinks(links ? [...links, link] : [link]);
+      setLinks(
+        links ? [...links.filter((prev) => prev.id !== link.id), link] : [link],
+      );
       navigate(-1);
     },
   );
 
   return (
     <>
-      <Header title="New Link" />
+      <Header title="Update Link" />
       <section className="mt-2">
         <ZodFormProvider
           schema={schema}
           onValid={sendMessage}
           onInvalid={console.log}
-          defaultValues={{
-            type: FIGMA_VARIABLE_TYPE.STRING,
-          }}
+          defaultValues={link}
         >
           <Fieldset>
             <FormInput name="topic" placeholder="/+/mqtt/topic/#" />
@@ -70,22 +73,27 @@ export function NewLink() {
               ))}
             </FormSelect>
           </Fieldset>
-          <FormActions />
+          <FormActions disabled={!link} />
+          {!link && (
+            <Text dimmed className="text-center">
+              Link not found
+            </Text>
+          )}
         </ZodFormProvider>
       </section>
     </>
   );
 }
 
-function FormActions() {
+function FormActions({ disabled }: { disabled: boolean }) {
   const {
     formState: { isSubmitting },
   } = useFormContext();
 
   return (
     <Fieldset className="mt-4">
-      <Button className="mx-auto" disabled={isSubmitting}>
-        Create
+      <Button className="mx-auto" disabled={disabled || isSubmitting}>
+        Update
       </Button>
     </Fieldset>
   );

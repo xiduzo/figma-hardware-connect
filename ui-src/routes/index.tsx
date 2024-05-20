@@ -13,7 +13,7 @@ export function Home() {
   return (
     <section className="space-y-5">
       <section className="text-center">
-        <Title>Mqtt to Figma</Title>
+        <Title>Figma MQTT</Title>
         <Text dimmed>made with ♥️ by xiduzo</Text>
       </section>
       <MqttSection />
