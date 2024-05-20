@@ -13,6 +13,7 @@ import {
 } from "../../../../hooks";
 import { ZodFormProvider } from "../../../../providers";
 import { typedPostMessage } from "../../../../utils/window";
+import { Header } from "../../../_components/Header";
 import { IconBackButton } from "../../../_components/IconBackButton";
 
 const schema = z.object({
@@ -43,10 +44,7 @@ export function NewLink() {
 
   return (
     <>
-      <section className="flex space-x-2 items-center">
-        <IconBackButton />
-        <Title>New Link</Title>
-      </section>
+      <Header title="New Link" />
       <section className="mt-2">
         <ZodFormProvider
           schema={schema}

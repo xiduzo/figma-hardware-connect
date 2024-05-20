@@ -1,4 +1,4 @@
-import * as Icons from "@heroicons/react/24/solid";
+import * as Icons from "@heroicons/react/24/outline";
 import { cva } from "class-variance-authority";
 import { FC } from "react";
 
@@ -8,7 +8,7 @@ export const IconButton: FC<Props> = ({ icon, className, ...buttonProps }) => {
   return (
     <button
       {...buttonProps}
-      className="flex items-center justify-center p-2 hover:bg-zinc-200 dark:hover:bg-zinc-700"
+      className="flex items-center justify-center p-1.5 hover:bg-zinc-200 dark:hover:bg-zinc-700"
     >
       <Component className={iconButton({ className })} />
     </button>

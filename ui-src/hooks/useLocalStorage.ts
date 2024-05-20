@@ -12,13 +12,21 @@ export enum LOCAL_STORAGE_KEYS {
   MQTT_CONNECTION = "MQTT_CONNECTION",
 }
 
+type Update<T> = T | ((prev?: T) => T | undefined);
+
 export function useLocalStorage<T>(key: LOCAL_STORAGE_KEYS, initialValue?: T) {
   const [state, setState] = useState(initialValue);
 
   const setLocalState = useCallback(
-    (update: T | undefined) =>
-      typedPostMessage(SetLocalStateValue(key, update)),
-    [key],
+    (update?: Update<T>) => {
+      typedPostMessage(
+        SetLocalStateValue(
+          key,
+          update instanceof Function ? update(state) : update,
+        ),
+      );
+    },
+    [key, state],
   );
 
   useEffect(() => {
@@ -47,7 +55,7 @@ export function useLocalStorage<T>(key: LOCAL_STORAGE_KEYS, initialValue?: T) {
     return () => {
       window.removeEventListener("message", handleEvent);
     };
-  }, [initialValue, state, key]);
+  }, [initialValue, key]);
 
   return [state, setLocalState] as const;
 }

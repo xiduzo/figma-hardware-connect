@@ -4,38 +4,36 @@ import { DeleteLink } from "../../../../common/Message";
 import { Text, Title } from "../../../components";
 import { IconButton } from "../../../components/IconButton";
 import {
-    LOCAL_STORAGE_KEYS,
-    useLocalStorage,
-    useSetUiOptions,
+  LOCAL_STORAGE_KEYS,
+  useLocalStorage,
+  useSetUiOptions,
 } from "../../../hooks";
 import { typedPostMessage } from "../../../utils/window";
-import { IconBackButton } from "../../_components/IconBackButton";
+import { Header } from "../../_components/Header";
 
 export function MqttLinks() {
   useSetUiOptions({ width: 550, height: 500 });
 
   const navigate = useNavigate();
-  const [links, setLinks] = useLocalStorage<Link[]>(LOCAL_STORAGE_KEYS.MQTT_LINKS);
+  const [links, setLinks] = useLocalStorage<Link[]>(
+    LOCAL_STORAGE_KEYS.MQTT_LINKS,
+  );
 
   function deleteLink(id?: string) {
     if (!id) return;
 
     typedPostMessage(DeleteLink(id));
-    setLinks(links?.filter(link => link.id !== id))
+    setLinks(links?.filter((link) => link.id !== id));
   }
 
   return (
     <section>
-      <div className="flex justify-between items-center">
-        <div className="flex items-center space-x-2">
-          <IconBackButton />
-          <Title>Links</Title>
-        </div>
+      <Header title="Mqtt links">
         <IconButton
           icon="PlusIcon"
           onClick={() => navigate("/mqtt/links/new")}
         />
-      </div>
+      </Header>
       <table className="w-full">
         <thead>
           <tr>

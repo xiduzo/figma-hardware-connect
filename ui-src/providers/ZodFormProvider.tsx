@@ -31,7 +31,10 @@ export function ZodFormProvider({
 
   return (
     <FormProvider {...formMethods}>
-      <form onSubmit={formMethods.handleSubmit(onValid, onInvalid)}>
+      <form
+        onSubmit={formMethods.handleSubmit(onValid, onInvalid)}
+        className="space-y-4"
+      >
         {children}
       </form>
     </FormProvider>

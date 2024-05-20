@@ -1,93 +1,57 @@
-import { zodResolver } from "@hookform/resolvers/zod";
-import { ReactElement, useEffect } from "react";
-import {
-  FieldValues,
-  FormProvider,
-  useForm,
-  useFormContext,
-} from "react-hook-form";
 import { useNavigate } from "react-router-dom";
-import z from "zod";
-import { Button, FormCheckBox, FormInput } from "../components";
-import { Fieldset } from "../components/form/Fieldset";
-import { LOCAL_STORAGE_KEYS, useLocalStorage, useSetUiOptions } from "../hooks";
-import { ZodFormProvider } from "../providers";
-import { useMqtt } from "../providers/MqttProvider";
-
-const schema = z.object({
-  host: z.string().min(1),
-  port: z.number().int().positive(),
-  username: z.string().optional(),
-  password: z.string().optional(),
-  saveSettings: z.boolean().default(false).optional(),
-});
-
-type Schema = z.infer<typeof schema>;
+import { Button, ButtonGroup, Text, Title } from "../components";
+import { ConnectionIndicator } from "../components/ConnectionIndicator";
+import { IconButton } from "../components/IconButton";
+import { useSetUiOptions } from "../hooks";
+import { useMqtt } from "../providers";
 
 export function Home() {
-  useSetUiOptions({ width: 300, height: 440 });
-
-  const { connect, isConnected } = useMqtt();
-
-  const navigate = useNavigate();
-  const [localState, setLocalState] = useLocalStorage<Schema>(
-    LOCAL_STORAGE_KEYS.MQTT_CONNECTION,
-  );
-
-  const formMethods = useForm<Schema>({
-    resolver: zodResolver(schema),
-    reValidateMode: "onChange",
+  useSetUiOptions({
+    width: 300,
+    height: 300,
   });
-
-  const handleValid = async (data: Schema) => {
-    try {
-      await connect(data);
-    } finally {
-      setLocalState(data.saveSettings ? data : undefined);
-    }
-  };
-
-  useEffect(() => {
-    formMethods.reset(localState);
-  }, [formMethods.reset, localState]);
-
-  useEffect(() => {
-    if (!isConnected) return;
-
-    navigate("/mqtt/links");
-  }, [isConnected]);
-
   return (
-    <ZodFormProvider
-      schema={schema}
-      onValid={handleValid}
-      onInvalid={console.log}
-      defaultValues={localState}
-    >
-      <Fieldset>
-        <FormInput name="host" placeholder="my.mqtt.broker" />
-        <FormInput name="port" type="number" placeholder="1883" />
-        <FormInput name="username" placeholder="username" />
-        <FormInput name="password" type="password" placeholder="password" />
-      </Fieldset>
-      <Fieldset className="my-6">
-        <FormCheckBox name="saveSettings" label="Store settings" />
-      </Fieldset>
-      <FormActions />
-    </ZodFormProvider>
+    <section className="space-y-5">
+      <section className="text-center">
+        <Title>Figma hardware linker</Title>
+        <Text dimmed>made with ♥️ by xiduzo</Text>
+      </section>
+      <MqttSection />
+      <section>
+        <Title as="h2">Serial</Title>
+        <Text dimmed>next release</Text>
+      </section>
+      <section>
+        <Title as="h2">Bluetooth</Title>
+        <Text dimmed>who knows...</Text>
+      </section>
+    </section>
   );
 }
 
-function FormActions() {
-  const {
-    formState: { isSubmitting },
-  } = useFormContext();
+function MqttSection() {
+  const navigate = useNavigate();
+  const { isConnected, disconnect } = useMqtt();
 
   return (
-    <Fieldset className="mt-4">
-      <Button className="mx-auto" disabled={isSubmitting}>
-        Connect
-      </Button>
-    </Fieldset>
+    <section className="space-y-1">
+      <section className="flex justify-between items-center">
+        <ConnectionIndicator isConnected={isConnected}>
+          <Title as="h2">Mqtt</Title>
+        </ConnectionIndicator>
+        <ButtonGroup>
+          {isConnected && (
+            <IconButton icon="SignalSlashIcon" onClick={() => disconnect()} />
+          )}
+          <IconButton
+            icon="CogIcon"
+            onClick={() => navigate("/mqtt/settings")}
+          />
+        </ButtonGroup>
+      </section>
+      <section>
+        <Button onClick={() => navigate("/mqtt/links")}>Manage links</Button>
+      </section>
+    </section>
   );
 }
