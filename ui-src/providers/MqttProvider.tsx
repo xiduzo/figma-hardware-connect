@@ -16,7 +16,7 @@ import {
   SetValiable,
 } from "../../common/Message";
 import { useLocalStorage, useMessageListener } from "../hooks";
-import { toBoolean } from "../utils/typeValidators";
+import { toBoolean, toFigmaRgb } from "../utils/typeValidators";
 import { typedPostMessage } from "../utils/window";
 
 type Callback<T> = (message: T) => void;
@@ -78,7 +78,7 @@ export function MqttProvider({ children }: PropsWithChildren) {
       if (!callback) return;
 
       try {
-        callback(message.toString());
+        callback(message);
       } catch (error) {
         console.error("Nothing we can do", error);
       }
@@ -117,29 +117,32 @@ export function MqttProvider({ children }: PropsWithChildren) {
   }, []);
 
   useEffect(() => {
-    const subscriptions = links?.map(({ topic, id, type }) =>
-      subscribe(topic, (value) => {
+    const subscriptions = links?.map(({ topic, id, type }) => {
+      console.log("subscribing to", topic, id, type);
+      return subscribe(topic, (value: Buffer) => {
         if (!id) return;
 
         switch (type) {
           case FIGMA_VARIABLE_TYPE.FLOAT:
-            typedPostMessage(SetValiable(id, Number(value)));
+            typedPostMessage(SetValiable(id, Number(value.toString())));
             break;
           case FIGMA_VARIABLE_TYPE.BOOLEAN:
-            typedPostMessage(SetValiable(id, toBoolean(value)));
+            typedPostMessage(SetValiable(id, toBoolean(value.toString())));
             break;
           case FIGMA_VARIABLE_TYPE.COLOR:
+            typedPostMessage(SetValiable(id, toFigmaRgb(value.toString())));
+            break;
           case FIGMA_VARIABLE_TYPE.STRING:
           default:
-            typedPostMessage(SetValiable(id, value));
+            typedPostMessage(SetValiable(id, value.toString()));
         }
-      }),
-    );
+      });
+    });
 
     return () => {
       subscriptions?.forEach((unsubscribe) => unsubscribe());
     };
-  }, [links]);
+  }, [links, isConnected]);
 
   useEffect(() => {
     if (!localState?.autoConnect) return;
